@@ -430,7 +430,7 @@ function App() {
           Source code
         </a>
         <a
-          href="https://blockstream.info/"
+          href="https://blockstream.info/testnet/"
           target="_blank"
           rel="noopener noreferrer"
         >
