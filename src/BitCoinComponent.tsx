@@ -69,21 +69,33 @@ export const BitcoinComponent = (props: BitcoinComponentParams) => {
   }
 
   async function sendTaprootTransaction() {
-    const keyPair = ECPair.fromPrivateKey(Buffer.from(pk, "hex"));
+    console.log("pk", pk);
+    const keyPair = ECPair.fromPrivateKey(Buffer.from(pk, "hex"), {
+      network,
+      compressed: true,
+    });
     const bufPubKey = keyPair.publicKey;
+    console.log("bufPubKey: ", bufPubKey.toString("hex"));
     const xOnlyPubKey = bufPubKey.slice(1, 33);
+    console.log("xOnlyPubKey: ", xOnlyPubKey);
     const account = payments.p2tr({
       pubkey: Buffer.from(xOnlyPubKey),
       network: networks.testnet,
     });
     console.log("Account: ", account);
-    const tweak = bitcoin.crypto.taggedHash("TapTweak", xOnlyPubKey);
-    const tweakedChildNode = ECPair.fromPrivateKey(Buffer.from(tweak), {
-      network: networks.testnet,
-    });
+    // const tweak = bitcoin.crypto.taggedHash("TapTweak", xOnlyPubKey);
+    // console.log("Tweak: ", tweak);
+    const tweakedChildNode = keyPair.tweak(
+      bitcoin.crypto.taggedHash("TapTweak", xOnlyPubKey)
+    );
+    console.log("Tweaked Child Node: ", tweakedChildNode);
+    console.log(
+      "Tweaked Child Node Public Key: ",
+      tweakedChildNode.publicKey.toString("hex")
+    );
 
-    const amount = 42e4;
-    const sendAmount = amount - 1e4;
+    const amount = 1000;
+    const sendAmount = amount - 500;
     const utxos = await fetchUtxos(account.address as string);
     console.log("utxos: ", utxos);
     const utxo = utxos[0];
@@ -92,7 +104,7 @@ export const BitcoinComponent = (props: BitcoinComponentParams) => {
         hash: utxo.txid,
         index: utxo.vout,
         witnessUtxo: {
-          value: amount,
+          value: utxo.value,
           script: account.output!,
         },
         tapInternalKey: xOnlyPubKey,
@@ -103,7 +115,7 @@ export const BitcoinComponent = (props: BitcoinComponentParams) => {
           "tb1p8e2gdm52a8rljvsc6zdaja37srtp7wtsmsn73mmusfu2r8zh232sa8cyfl",
       });
     console.log("Inputs count", psbt.inputCount);
-    psbt.signInput(utxo.vout, tweakedChildNode);
+    psbt.signInput(0, tweakedChildNode);
     psbt.finalizeAllInputs();
 
     console.log("psbt: ", psbt);
