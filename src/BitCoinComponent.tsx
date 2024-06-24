@@ -42,9 +42,12 @@ export const BitcoinComponent = (props: BitcoinComponentParams) => {
     } else if (mode === "segwit") {
       return payments.p2wpkh({ pubkey: bufPubKey, network }).address;
     } else if (mode === "tapRoot") {
-      const xOnlyPubKey = bufPubKey.slice(1);
+      const xOnlyPubKey = bufPubKey.slice(1, 33);
+      const tweakedChildNode = keyPair.tweak(
+        bitcoin.crypto.taggedHash("TapTweak", xOnlyPubKey)
+      );
       return payments.p2tr({
-        pubkey: Buffer.from(xOnlyPubKey),
+        pubkey: Buffer.from(tweakedChildNode.publicKey.slice(1, 33)),
         network: networks.testnet,
       });
     } else {
@@ -63,42 +66,29 @@ export const BitcoinComponent = (props: BitcoinComponentParams) => {
     const response = await axios.get(
       `https://blockstream.info/testnet/api/address/${address}/utxo`
     );
-    return response.data.filter(
-      (utxo: { status: { confirmed: any } }) => utxo.status.confirmed
-    );
+    return response.data;
   }
 
   async function sendTaprootTransaction() {
-    console.log("pk", pk);
     const keyPair = ECPair.fromPrivateKey(Buffer.from(pk, "hex"), {
       network,
       compressed: true,
     });
     const bufPubKey = keyPair.publicKey;
-    console.log("bufPubKey: ", bufPubKey.toString("hex"));
     const xOnlyPubKey = bufPubKey.slice(1, 33);
-    console.log("xOnlyPubKey: ", xOnlyPubKey);
-    const account = payments.p2tr({
-      pubkey: Buffer.from(xOnlyPubKey),
-      network: networks.testnet,
-    });
-    console.log("Account: ", account);
-    // const tweak = bitcoin.crypto.taggedHash("TapTweak", xOnlyPubKey);
-    // console.log("Tweak: ", tweak);
     const tweakedChildNode = keyPair.tweak(
       bitcoin.crypto.taggedHash("TapTweak", xOnlyPubKey)
     );
-    console.log("Tweaked Child Node: ", tweakedChildNode);
-    console.log(
-      "Tweaked Child Node Public Key: ",
-      tweakedChildNode.publicKey.toString("hex")
-    );
-
-    const amount = 1000;
-    const sendAmount = amount - 500;
+    const account = payments.p2tr({
+      pubkey: Buffer.from(tweakedChildNode.publicKey.slice(1, 33)),
+      network: networks.testnet,
+    });
     const utxos = await fetchUtxos(account.address as string);
-    console.log("utxos: ", utxos);
     const utxo = utxos[0];
+    console.log("utxos: ", utxos);
+    const amount = utxo.value;
+    const sendAmount = amount - 1400;
+
     const psbt = new bitcoin.Psbt({ network })
       .addInput({
         hash: utxo.txid,
@@ -118,10 +108,9 @@ export const BitcoinComponent = (props: BitcoinComponentParams) => {
     psbt.signInput(0, tweakedChildNode);
     psbt.finalizeAllInputs();
 
-    console.log("psbt: ", psbt);
-
     const tx = psbt.extractTransaction();
     const txHex = tx.toHex();
+    console.log("txHex: ", txHex);
     const response = await axios.post(
       `https://blockstream.info/testnet/api/tx`,
       txHex
