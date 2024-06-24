@@ -423,11 +423,25 @@ function App() {
 
       <footer className="footer">
         <a
-          href="https://github.com/Web3Auth/web3auth-core-kit-examples/tree/main/single-factor-auth-web/sfa-web-google-example"
+          href="https://github.com/shahbaz17/w3a-sfa-bitcoin"
           target="_blank"
           rel="noopener noreferrer"
         >
           Source code
+        </a>
+        <a
+          href="https://blockstream.info/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Block Explorer
+        </a>
+        <a
+          href="https://coinfaucet.eu/en/btc-testnet/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Faucet
         </a>
       </footer>
     </div>
