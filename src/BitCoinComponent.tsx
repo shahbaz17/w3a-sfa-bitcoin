@@ -97,8 +97,7 @@ export const BitcoinComponent = ({ provider }: BitcoinComponentParams) => {
     console.log("utxos: ", utxos);
 
     if (utxos.length === 0) {
-      uiConsole("No confirmed UTXOs found");
-      return;
+      return "No confirmed UTXOs found, send some funds to the address first.";
     }
 
     const utxo = utxos[0];
@@ -193,8 +192,8 @@ export const BitcoinComponent = ({ provider }: BitcoinComponentParams) => {
         <div>
           <button
             onClick={async () => {
-              const data = await sendTaprootTransaction();
-              uiConsole("Response Data: ", data);
+              const hash = await sendTaprootTransaction();
+              uiConsole("Tnx: ", hash);
             }}
             className="card"
           >
