@@ -155,7 +155,7 @@ export const BitcoinComponent = ({ provider }: BitcoinComponentParams) => {
 
   return (
     <>
-      <h1>Bitcoin Component</h1>
+      <h1>Bitcoin Functions</h1>
       <div className="flex-container">
         <div>
           <button

@@ -310,6 +310,8 @@ function App() {
 
   const loginView = (
     <>
+      <BitcoinComponent provider={provider!} />
+      <h1>Web3Auth & Ethereum Functions</h1>
       <div className="flex-container">
         <div>
           <button onClick={getUserInfo} className="card">
@@ -386,8 +388,6 @@ function App() {
       <div id="console" style={{ whiteSpace: "pre-line" }}>
         <p style={{ whiteSpace: "pre-line" }}></p>
       </div>
-
-      <BitcoinComponent provider={provider!} />
     </>
   );
 
