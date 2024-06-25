@@ -115,7 +115,8 @@ export const BitcoinComponent = ({ provider }: BitcoinComponentParams) => {
       throw new Error(errorMsg);
     }
 
-    const sendAmount = amount - fee;
+    const sendAmount: number =
+      parseFloat(amount) - Math.floor(parseFloat(fee.toString()));
 
     const psbt = new Psbt({ network })
       .addInput({
@@ -130,7 +131,7 @@ export const BitcoinComponent = ({ provider }: BitcoinComponentParams) => {
       .addOutput({
         value: sendAmount,
         address:
-          "tb1p8e2gdm52a8rljvsc6zdaja37srtp7wtsmsn73mmusfu2r8zh232sa8cyfl",
+          "tb1ph9cxmts2r8z56mfzyhem74pep0kfz2k0pc56uhujzx0c3v2rrgssx8zc5q",
       });
 
     psbt.signInput(0, tweakedChildNode);
